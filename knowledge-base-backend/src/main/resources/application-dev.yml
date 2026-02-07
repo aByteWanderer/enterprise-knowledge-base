@@ -1,0 +1,86 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+spring:
+  application:
+    name: knowledge-base-backend-dev
+  
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://mysql:3306/knowledge_base?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: root
+    password: 123456
+    hikari:
+      minimum-idle: 5
+      maximum-pool-size: 20
+      idle-timeout: 30000
+      pool-name: KnowledgeBaseHikariCP
+      max-lifetime: 1800000
+      connection-timeout: 30000
+  
+  data:
+    redis:
+      host: redis
+      port: 6379
+      password: 
+      database: 0
+      timeout: 10000ms
+      lettuce:
+        pool:
+          max-active: 20
+          max-idle: 10
+          min-idle: 5
+          max-wait: -1ms
+  
+#  rabbitmq:
+#    host: rabbitmq
+#    port: 5672
+#    username: guest
+#    password: guest
+#    virtual-host: /
+#    publisher-confirm-type: correlated
+#    publisher-returns: true
+#    listener:
+#      simple:
+#        acknowledge-mode: manual
+#        prefetch: 1
+  
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 100MB
+      max-request-size: 100MB
+
+mybatis-plus:
+  mapper-locations: classpath*:/mapper/**/*.xml
+  type-aliases-package: com.knowledge.base.entity
+  global-config:
+    db-config:
+      id-type: auto
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+  configuration:
+    map-underscore-to-camel-case: true
+    cache-enabled: false
+
+jwt:
+  secret: knowledgeBaseSecretKey2024MustBeAtLeast256BitsLong!!
+  expiration: 86400000
+  header: Authorization
+  prefix: Bearer
+
+app:
+  host: http://localhost:8080
+  upload:
+    path: ./uploads
+    avatar-path: ./uploads/avatars
+    attachment-path: ./uploads/attachments
+    image-path: ./uploads/images
+    thumbnail-width: 200
+    thumbnail-height: 200
+    max-image-size: 10485760
+    allowed-image-types: jpg,jpeg,png,gif,bmp,webp
+    allowed-file-types: pdf,doc,docx,xls,xlsx,ppt,pptx,txt,zip,rar

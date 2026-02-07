@@ -1,0 +1,53 @@
+import request from '@/utils/request'
+
+export function getCategoryTree() {
+  return request({
+    url: '/categories/tree',
+    method: 'get'
+  })
+}
+
+export function getCategoryList() {
+  return request({
+    url: '/categories',
+    method: 'get'
+  })
+}
+
+export function getCategory(id) {
+  return request({
+    url: `/categories/${id}`,
+    method: 'get'
+  })
+}
+
+export function createCategory(data) {
+  return request({
+    url: '/categories',
+    method: 'post',
+    data
+  })
+}
+
+export function updateCategory(id, data) {
+  return request({
+    url: `/categories/${id}`,
+    method: 'put',
+    data
+  })
+}
+
+export function deleteCategory(id) {
+  return request({
+    url: `/categories/${id}`,
+    method: 'delete'
+  })
+}
+
+export function updateCategoryStatus(id, status) {
+  return request({
+    url: `/categories/${id}/status`,
+    method: 'put',
+    params: { status }
+  })
+}

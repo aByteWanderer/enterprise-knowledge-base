@@ -1,0 +1,62 @@
+# 企业知识库系统 - 启动说明
+
+## 环境要求
+- JDK 22 (位于: D:\software\env\jdk22\jdk-22)
+- MySQL 8.0+
+- Redis 7.x+
+
+## 启动步骤
+
+### 1. 启动数据库和缓存（Docker）
+```bash
+cd docker
+docker-compose up -d mysql redis
+```
+
+### 2. 初始化数据库
+```bash
+# 执行数据库脚本
+mysql -u root -proot123 knowledge_base < docker/db/init.sql
+```
+
+### 3. 启动后端
+```bash
+cd knowledge-base-backend
+./start.bat
+```
+或者直接运行：
+```bash
+cd knowledge-base-backend
+mvn clean package -DskipTests
+java -jar target/knowledge-base-backend-1.0.0.jar --spring.profiles.active=dev
+```
+
+### 4. 启动前端
+```bash
+cd knowledge-base-admin
+./start.bat
+```
+
+## 访问地址
+- 前端: http://localhost:3000
+- 后端 API: http://localhost:8080/api
+- API 文档: http://localhost:8080/doc.html
+
+## 默认账号
+- 用户名: admin
+- 密码: 123456
+
+## 常见问题
+
+### 问题: Java 版本不兼容
+解决: 确保使用 JDK 22 进行编译和运行
+```bash
+set JAVA_HOME=D:\software\env\jdk22\jdk-22
+set PATH=%JAVA_HOME%\bin;%PATH%
+```
+
+### 问题: MySQL 连接失败
+解决: 检查 MySQL 服务是否启动，以及配置文件中的连接信息是否正确
+
+### 问题: Redis 连接失败
+解决: 检查 Redis 服务是否启动，默认端口 6379
