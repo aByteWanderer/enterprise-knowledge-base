@@ -134,10 +134,24 @@ public class JwtTokenProvider {
      */
     public Boolean validateToken(String token) {
         try {
-            getAllClaimsFromToken(token);
-            return !isTokenExpired(token);
-        } catch (JwtException | IllegalArgumentException e) {
-            log.error("JWT验证失败: {}", e.getMessage());
+            log.debug("[JWT Provider] Validating token: {}", token != null ? token.substring(0, Math.min(20, token.length())) + "..." : "null");
+            
+            Claims claims = getAllClaimsFromToken(token);
+            log.debug("[JWT Provider] Token parsed successfully, subject: {}, expiration: {}", 
+                    claims.getSubject(), claims.getExpiration());
+            
+            boolean expired = isTokenExpired(token);
+            log.debug("[JWT Provider] Token expired: {}", expired);
+            
+            return !expired;
+        } catch (JwtException e) {
+            log.error("[JWT Provider] JWT validation failed: {}, error type: {}", e.getMessage(), e.getClass().getSimpleName());
+            return false;
+        } catch (IllegalArgumentException e) {
+            log.error("[JWT Provider] JWT validation failed - Illegal argument: {}", e.getMessage());
+            return false;
+        } catch (Exception e) {
+            log.error("[JWT Provider] JWT validation failed - Unexpected error: {}", e.getMessage(), e);
             return false;
         }
     }
@@ -146,8 +160,17 @@ public class JwtTokenProvider {
      * 获取请求头中的token
      */
     public String getTokenFromHeader(String authHeader) {
+        log.debug("[JWT Provider] Received auth header: {}", authHeader != null ? authHeader.substring(0, Math.min(30, authHeader.length())) + "..." : "null");
+        log.debug("[JWT Provider] Expected prefix: '{}', length: {}", prefix, prefix != null ? prefix.length() : 0);
+        
         if (authHeader != null && authHeader.startsWith(prefix)) {
-            return authHeader.substring(prefix.length());
+            String token = authHeader.substring(prefix.length()).trim();
+            log.debug("[JWT Provider] Token extracted successfully, length: {}", token.length());
+            return token;
+        }
+        
+        if (authHeader != null) {
+            log.warn("[JWT Provider] Auth header doesn't start with expected prefix '{}'", prefix);
         }
         return null;
     }

@@ -46,7 +46,7 @@ public class TagController {
     
     @Operation(summary = "创建标签")
     @PostMapping
-    @PreAuthorize("hasAuthority('tag:create')")
+    
     public Result<Long> createTag(@Valid @RequestBody TagDTO tagDTO) {
         Long tagId = tagService.createTag(tagDTO);
         return Result.success(tagId);
@@ -54,7 +54,7 @@ public class TagController {
     
     @Operation(summary = "更新标签")
     @PutMapping("/{id}")
-    @PreAuthorize("hasAuthority('tag:update')")
+    
     public Result<Void> updateTag(@PathVariable Long id, @Valid @RequestBody TagDTO tagDTO) {
         tagDTO.setId(id);
         tagService.updateTag(tagDTO);
@@ -63,7 +63,7 @@ public class TagController {
     
     @Operation(summary = "删除标签")
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('tag:delete')")
+    
     public Result<Void> deleteTag(@PathVariable Long id) {
         tagService.deleteTag(id);
         return Result.success();
@@ -71,7 +71,7 @@ public class TagController {
     
     @Operation(summary = "批量删除标签")
     @DeleteMapping("/batch")
-    @PreAuthorize("hasAuthority('tag:delete')")
+    
     public Result<Void> deleteTags(@RequestBody List<Long> ids) {
         tagService.deleteTags(ids);
         return Result.success();

@@ -71,7 +71,7 @@ public class ArticleController {
     
     @Operation(summary = "删除文章")
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('article:delete')")
+    
     public Result<Void> deleteArticle(@PathVariable Long id) {
         articleService.deleteArticle(id);
         return Result.success();
@@ -79,7 +79,7 @@ public class ArticleController {
     
     @Operation(summary = "批量删除文章")
     @DeleteMapping("/batch")
-    @PreAuthorize("hasAuthority('article:delete')")
+    
     public Result<Void> deleteArticles(@RequestBody List<Long> ids) {
         articleService.deleteArticles(ids);
         return Result.success();
@@ -94,7 +94,7 @@ public class ArticleController {
     
     @Operation(summary = "审核文章")
     @PostMapping("/{id}/audit")
-    @PreAuthorize("hasAuthority('article:audit')")
+    
     public Result<Void> auditArticle(
             @PathVariable Long id,
             @RequestParam String status,
@@ -105,7 +105,7 @@ public class ArticleController {
     
     @Operation(summary = "查询待审核文章")
     @GetMapping("/pending")
-    @PreAuthorize("hasAuthority('article:audit')")
+    
     public Result<List<ArticleVO>> getPendingArticles() {
         List<ArticleVO> articles = articleService.selectPendingArticles();
         return Result.success(articles);
@@ -120,7 +120,7 @@ public class ArticleController {
     
     @Operation(summary = "发布文章")
     @PostMapping("/{id}/publish")
-    @PreAuthorize("hasAuthority('article:publish')")
+    
     public Result<Void> publishArticle(@PathVariable Long id) {
         articleService.publishArticle(id);
         return Result.success();

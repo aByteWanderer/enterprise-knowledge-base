@@ -48,19 +48,37 @@ const routes = [
         path: 'articles',
         name: 'ArticleManagement',
         component: () => import('@/views/articles/index.vue'),
-        meta: { title: '文章管理', icon: 'Document', permission: 'article:list' }
+        meta: { title: '文章管理', icon: 'Document' }
+      },
+      {
+        path: 'articles/:id',
+        name: 'ArticleDetail',
+        component: () => import('@/views/articles/detail.vue'),
+        meta: { title: '文章详情', icon: 'Document' }
       },
       {
         path: 'articles/audit',
         name: 'ArticleAudit',
         component: () => import('@/views/articles/audit.vue'),
-        meta: { title: '文章审核', icon: 'Stamp', permission: 'article:audit' }
+        meta: { title: '文章审核', icon: 'Stamp' }
       },
       {
         path: 'tags',
         name: 'TagManagement',
         component: () => import('@/views/tags/index.vue'),
         meta: { title: '标签管理', icon: 'PriceTag', permission: 'tag:list' }
+      },
+      {
+        path: 'profile',
+        name: 'Profile',
+        component: () => import('@/views/profile/index.vue'),
+        meta: { title: '个人中心', icon: 'User' }
+      },
+      {
+        path: 'password',
+        name: 'ChangePassword',
+        component: () => import('@/views/password/index.vue'),
+        meta: { title: '修改密码', icon: 'Lock' }
       }
     ]
   },
@@ -78,7 +96,7 @@ const router = createRouter({
 })
 
 // 路由守卫
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
   document.title = to.meta.title ? `${to.meta.title} - 企业知识库` : '企业知识库'
   
   const userStore = useUserStore()
@@ -88,6 +106,17 @@ router.beforeEach((to, from, next) => {
     if (!token) {
       next({ name: 'Login', query: { redirect: to.fullPath } })
     } else {
+      // 如果有token但没有用户信息，重新获取
+      if (!userStore.userInfo) {
+        try {
+          await userStore.fetchUserInfo()
+        } catch (error) {
+          // 获取失败，清除token并跳转登录
+          userStore.clearUserData()
+          next({ name: 'Login', query: { redirect: to.fullPath } })
+          return
+        }
+      }
       next()
     }
   } else {

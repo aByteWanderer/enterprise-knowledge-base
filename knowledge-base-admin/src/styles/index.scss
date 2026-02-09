@@ -80,6 +80,15 @@ body {
   }
 }
 
+// WangEditor 样式修复
+.w-e-panel-container {
+  z-index: 3000 !important;
+}
+
+.w-e-dropdown-item {
+  z-index: 3001 !important;
+}
+
 // 动画
 .fade-enter-active,
 .fade-leave-active {

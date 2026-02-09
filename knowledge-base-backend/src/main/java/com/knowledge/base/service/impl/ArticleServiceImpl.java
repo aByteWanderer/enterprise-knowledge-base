@@ -66,17 +66,32 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     public List<ArticleVO> selectArticleList(ArticleDTO articleDTO) {
         List<ArticleVO> articles = articleMapper.selectArticleList();
         
+        // 为每个文章关联标签
+        for (ArticleVO article : articles) {
+            List<Tag> tags = tagMapper.selectTagsByArticleId(article.getId());
+            article.setTags(tags.stream()
+                    .map(this::convertToTagVO)
+                    .collect(Collectors.toList()));
+        }
+        
         // 如果指定了分类ID，过滤结果
         if (articleDTO.getCategoryId() != null) {
             articles = articles.stream()
-                    .filter(a -> a.getCategoryId().equals(articleDTO.getCategoryId()))
+                    .filter(a -> a.getCategoryId() != null && a.getCategoryId().equals(articleDTO.getCategoryId()))
                     .collect(Collectors.toList());
         }
         
         // 如果指定了状态，过滤结果
-        if (articleDTO.getStatus() != null) {
+        if (articleDTO.getStatus() != null && !articleDTO.getStatus().isEmpty()) {
             articles = articles.stream()
-                    .filter(a -> a.getStatus().equals(articleDTO.getStatus()))
+                    .filter(a -> a.getStatus() != null && a.getStatus().equals(articleDTO.getStatus()))
+                    .collect(Collectors.toList());
+        }
+        
+        // 如果指定了标题关键字，过滤结果
+        if (articleDTO.getTitle() != null && !articleDTO.getTitle().isEmpty()) {
+            articles = articles.stream()
+                    .filter(a -> a.getTitle() != null && a.getTitle().contains(articleDTO.getTitle()))
                     .collect(Collectors.toList());
         }
         

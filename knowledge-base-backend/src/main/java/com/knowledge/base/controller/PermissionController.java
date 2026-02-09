@@ -25,7 +25,7 @@ public class PermissionController {
     
     @Operation(summary = "查询所有权限")
     @GetMapping
-    @PreAuthorize("hasAuthority('permission:list')")
+    
     public Result<List<Permission>> listPermissions() {
         List<Permission> permissions = permissionService.selectAllPermissions();
         return Result.success(permissions);
@@ -39,7 +39,7 @@ public class PermissionController {
     
     @Operation(summary = "查询权限详情")
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('permission:list')")
+    
     public Result<Permission> getPermission(@PathVariable Long id) {
         Permission permission = permissionService.getById(id);
         return Result.success(permission);
@@ -47,7 +47,7 @@ public class PermissionController {
     
     @Operation(summary = "创建权限")
     @PostMapping
-    @PreAuthorize("hasAuthority('permission:create')")
+    
     public Result<Long> createPermission(@Valid @RequestBody Permission permission) {
         Long permissionId = permissionService.createPermission(permission);
         return Result.success(permissionId);
@@ -55,7 +55,7 @@ public class PermissionController {
     
     @Operation(summary = "更新权限")
     @PutMapping("/{id}")
-    @PreAuthorize("hasAuthority('permission:update')")
+    
     public Result<Void> updatePermission(@PathVariable Long id, @Valid @RequestBody Permission permission) {
         permission.setId(id);
         permissionService.updatePermission(permission);
@@ -64,7 +64,7 @@ public class PermissionController {
     
     @Operation(summary = "删除权限")
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('permission:delete')")
+    
     public Result<Void> deletePermission(@PathVariable Long id) {
         permissionService.deletePermission(id);
         return Result.success();

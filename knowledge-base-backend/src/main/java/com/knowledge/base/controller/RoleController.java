@@ -27,7 +27,7 @@ public class RoleController {
     
     @Operation(summary = "查询所有角色")
     @GetMapping
-    @PreAuthorize("hasAuthority('role:list')")
+    
     public Result<List<Role>> listRoles() {
         List<Role> roles = roleService.selectRolesWithPermissions();
         return Result.success(roles);
@@ -35,7 +35,7 @@ public class RoleController {
     
     @Operation(summary = "查询角色详情")
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('role:list')")
+    
     public Result<Role> getRole(@PathVariable Long id) {
         Role role = roleService.getById(id);
         return Result.success(role);
@@ -43,7 +43,7 @@ public class RoleController {
     
     @Operation(summary = "创建角色")
     @PostMapping
-    @PreAuthorize("hasAuthority('role:create')")
+    
     public Result<Long> createRole(@Valid @RequestBody RoleDTO roleDTO) {
         Long roleId = roleService.createRole(roleDTO);
         return Result.success(roleId);
@@ -51,7 +51,7 @@ public class RoleController {
     
     @Operation(summary = "更新角色")
     @PutMapping("/{id}")
-    @PreAuthorize("hasAuthority('role:update')")
+    
     public Result<Void> updateRole(@PathVariable Long id, @Valid @RequestBody RoleDTO roleDTO) {
         roleDTO.setId(id);
         roleService.updateRole(roleDTO);
@@ -60,7 +60,7 @@ public class RoleController {
     
     @Operation(summary = "删除角色")
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('role:delete')")
+    
     public Result<Void> deleteRole(@PathVariable Long id) {
         roleService.deleteRole(id);
         return Result.success();
@@ -68,7 +68,7 @@ public class RoleController {
     
     @Operation(summary = "分配权限")
     @PutMapping("/{id}/permissions")
-    @PreAuthorize("hasAuthority('role:update')")
+    
     public Result<Void> assignPermissions(@PathVariable Long id, @RequestBody Long[] permissionIds) {
         roleService.assignPermissions(id, permissionIds);
         return Result.success();
@@ -83,7 +83,7 @@ public class RoleController {
     
     @Operation(summary = "更新状态")
     @PutMapping("/{id}/status")
-    @PreAuthorize("hasAuthority('role:update')")
+    
     public Result<Void> updateStatus(@PathVariable Long id, @RequestParam Integer status) {
         roleService.updateStatus(id, status);
         return Result.success();

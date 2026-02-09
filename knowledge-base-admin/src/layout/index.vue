@@ -16,15 +16,14 @@
           active-text-color="#409EFF"
           router
         >
-          <template v-for="route in routes" :key="route.path">
-            <el-menu-item
-              v-if="!route.children || route.children.length === 1"
-              :index="route.children ? route.children[0].path : route.path"
-            >
-              <el-icon><component :is="route.children ? route.children[0].meta.icon : route.meta.icon" /></el-icon>
-              <span>{{ route.children ? route.children[0].meta.title : route.meta.title }}</span>
-            </el-menu-item>
-          </template>
+          <el-menu-item
+            v-for="route in routes"
+            :key="route.path"
+            :index="route.path"
+          >
+            <el-icon><component :is="route.meta.icon" /></el-icon>
+            <span>{{ route.meta.title }}</span>
+          </el-menu-item>
         </el-menu>
       </el-scrollbar>
     </el-aside>
@@ -89,12 +88,50 @@ const userStore = useUserStore()
 const isCollapse = ref(false)
 const userInfo = computed(() => userStore.userInfo)
 
-const routes = router.getRoutes()
-  .filter(r => r.meta?.requiresAuth && r.children?.length > 0)
-  .map(r => ({
-    path: r.path,
-    children: r.children.filter(c => c.meta?.icon)
-  }))
+const menuRoutes = [
+  {
+    path: '/dashboard',
+    name: 'Dashboard',
+    meta: { title: '首页', icon: 'Odometer' }
+  },
+  {
+    path: '/users',
+    name: 'UserManagement',
+    meta: { title: '用户管理', icon: 'User' }
+  },
+  {
+    path: '/roles',
+    name: 'RoleManagement',
+    meta: { title: '角色管理', icon: 'UserFilled' }
+  },
+  {
+    path: '/permissions',
+    name: 'PermissionManagement',
+    meta: { title: '权限管理', icon: 'Key' }
+  },
+  {
+    path: '/categories',
+    name: 'CategoryManagement',
+    meta: { title: '分类管理', icon: 'Folder' }
+  },
+  {
+    path: '/articles',
+    name: 'ArticleManagement',
+    meta: { title: '文章管理', icon: 'Document' }
+  },
+  {
+    path: '/articles/audit',
+    name: 'ArticleAudit',
+    meta: { title: '文章审核', icon: 'Stamp' }
+  },
+  {
+    path: '/tags',
+    name: 'TagManagement',
+    meta: { title: '标签管理', icon: 'PriceTag' }
+  }
+]
+
+const routes = computed(() => menuRoutes)
 
 const activeMenu = computed(() => route.path)
 

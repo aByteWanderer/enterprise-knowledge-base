@@ -41,7 +41,7 @@ public class CategoryController {
     
     @Operation(summary = "查询所有分类")
     @GetMapping
-    @PreAuthorize("hasAuthority('category:list')")
+    
     public Result<List<Category>> listCategories() {
         List<Category> categories = categoryService.list();
         return Result.success(categories);
@@ -49,7 +49,7 @@ public class CategoryController {
     
     @Operation(summary = "查询分类详情")
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('category:list')")
+    
     public Result<Category> getCategory(@PathVariable Long id) {
         Category category = categoryService.getById(id);
         return Result.success(category);
@@ -57,7 +57,7 @@ public class CategoryController {
     
     @Operation(summary = "创建分类")
     @PostMapping
-    @PreAuthorize("hasAuthority('category:create')")
+    
     public Result<Long> createCategory(@Valid @RequestBody CategoryDTO categoryDTO) {
         Long categoryId = categoryService.createCategory(categoryDTO);
         return Result.success(categoryId);
@@ -65,7 +65,7 @@ public class CategoryController {
     
     @Operation(summary = "更新分类")
     @PutMapping("/{id}")
-    @PreAuthorize("hasAuthority('category:update')")
+    
     public Result<Void> updateCategory(@PathVariable Long id, @Valid @RequestBody CategoryDTO categoryDTO) {
         categoryDTO.setId(id);
         categoryService.updateCategory(categoryDTO);
@@ -74,7 +74,7 @@ public class CategoryController {
     
     @Operation(summary = "删除分类")
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('category:delete')")
+    
     public Result<Void> deleteCategory(@PathVariable Long id) {
         categoryService.deleteCategory(id);
         return Result.success();
@@ -82,7 +82,7 @@ public class CategoryController {
     
     @Operation(summary = "批量删除分类")
     @DeleteMapping("/batch")
-    @PreAuthorize("hasAuthority('category:delete')")
+    
     public Result<Void> deleteCategories(@RequestBody List<Long> ids) {
         categoryService.deleteCategories(ids);
         return Result.success();
@@ -90,7 +90,7 @@ public class CategoryController {
     
     @Operation(summary = "更新状态")
     @PutMapping("/{id}/status")
-    @PreAuthorize("hasAuthority('category:update')")
+    
     public Result<Void> updateStatus(@PathVariable Long id, @RequestParam Integer status) {
         categoryService.updateStatus(id, status);
         return Result.success();

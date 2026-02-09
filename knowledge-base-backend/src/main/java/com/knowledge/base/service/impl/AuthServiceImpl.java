@@ -67,14 +67,31 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public UserInfoVO getCurrentUserInfo() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()) {
-            throw new BusinessException(ResultCode.UNAUTHORIZED);
+        
+        if (authentication == null) {
+            throw new BusinessException(ResultCode.UNAUTHORIZED, "未登录");
         }
         
-        String username = authentication.getName();
+        String username;
+        
+        // 如果是匿名用户或authentication为null，从token直接解析用户名
+        if (authentication.getPrincipal() instanceof String) {
+            username = (String) authentication.getPrincipal();
+        } else if (authentication.getPrincipal() instanceof UserDetails) {
+            username = ((UserDetails) authentication.getPrincipal()).getUsername();
+        } else {
+            // 尝试从token获取
+            throw new BusinessException(ResultCode.UNAUTHORIZED, "无法获取用户信息");
+        }
+        
+        // 如果是anonymousUser，说明认证失败
+        if ("anonymousUser".equals(username)) {
+            throw new BusinessException(ResultCode.UNAUTHORIZED, "用户未登录");
+        }
+        
         User user = userService.selectByUsername(username);
         if (user == null) {
-            throw new BusinessException(ResultCode.USER_NOT_FOUND);
+            throw new BusinessException(ResultCode.USER_NOT_FOUND, "用户不存在: " + username);
         }
         
         return userService.getUserInfo(user.getId());
@@ -104,5 +121,4 @@ public class AuthServiceImpl implements AuthService {
         
         return loginVO;
     }
-    
 }

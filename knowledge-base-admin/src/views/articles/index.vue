@@ -4,11 +4,11 @@
       <template #header>
         <div class="card-header">
           <el-form :inline="true" :model="searchForm" class="search-form">
-            <el-form-item label="标题">
-              <el-input v-model="searchForm.title" placeholder="请输入标题" clearable />
+            <el-form-item label="标题" class="search-item">
+              <el-input v-model="searchForm.title" placeholder="请输入标题" clearable style="width: 160px" />
             </el-form-item>
-            <el-form-item label="分类">
-              <el-select v-model="searchForm.categoryId" placeholder="请选择分类" clearable>
+            <el-form-item label="分类" class="search-item">
+              <el-select v-model="searchForm.categoryId" placeholder="请选择分类" clearable style="width: 140px">
                 <el-option
                   v-for="cat in categories"
                   :key="cat.id"
@@ -17,15 +17,15 @@
                 />
               </el-select>
             </el-form-item>
-            <el-form-item label="状态">
-              <el-select v-model="searchForm.status" placeholder="请选择状态" clearable>
+            <el-form-item label="状态" class="search-item">
+              <el-select v-model="searchForm.status" placeholder="请选择状态" clearable style="width: 120px">
                 <el-option label="草稿" value="DRAFT" />
                 <el-option label="待审核" value="PENDING" />
                 <el-option label="已发布" value="PUBLISHED" />
                 <el-option label="已归档" value="ARCHIVED" />
               </el-select>
             </el-form-item>
-            <el-form-item>
+            <el-form-item class="search-item">
               <el-button type="primary" @click="handleSearch">搜索</el-button>
               <el-button @click="handleReset">重置</el-button>
             </el-form-item>
@@ -49,22 +49,44 @@
         style="width: 100%"
       >
         <el-table-column type="selection" width="55" />
-        <el-table-column prop="title" label="标题" show-overflow-tooltip />
-        <el-table-column prop="categoryName" label="分类" width="120" />
-        <el-table-column prop="authorName" label="作者" width="100" />
-        <el-table-column prop="status" label="状态" width="100">
+        <el-table-column prop="title" label="标题" show-overflow-tooltip min-width="200" />
+        <el-table-column prop="categoryName" label="分类" width="100" />
+        <el-table-column label="标签" width="150">
           <template #default="{ row }">
-            <el-tag :type="getStatusType(row.status)">
+            <template v-if="row.tags && row.tags.length">
+              <el-tag 
+                v-for="tag in row.tags.slice(0, 2)" 
+                :key="tag.id" 
+                size="small" 
+                class="tag-inline"
+              >
+                {{ tag.tagName }}
+              </el-tag>
+              <span v-if="row.tags.length > 2" class="more-tags">+{{ row.tags.length - 2 }}</span>
+            </template>
+            <span v-else class="no-tags">-</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="authorName" label="作者" width="80" />
+        <el-table-column prop="status" label="状态" width="90">
+          <template #default="{ row }">
+            <el-tag :type="getStatusType(row.status)" size="small">
               {{ getStatusText(row.status) }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="viewCount" label="浏览量" width="100" align="center" />
-        <el-table-column prop="createdAt" label="创建时间" width="160" />
-        <el-table-column label="操作" width="200" fixed="right">
+        <el-table-column prop="viewCount" label="浏览量" width="80" align="center" />
+        <el-table-column prop="createdAt" label="创建时间" width="140" />
+        <el-table-column label="操作" width="280" fixed="right">
           <template #default="{ row }">
             <el-button type="primary" link @click="handleEdit(row)">编辑</el-button>
             <el-button type="primary" link @click="handleView(row)">查看</el-button>
+            <el-button 
+              v-if="row.status === 'DRAFT'" 
+              type="warning" 
+              link 
+              @click="handleSubmitAudit(row)"
+            >提交审核</el-button>
             <el-button type="danger" link @click="handleDelete(row)">删除</el-button>
           </template>
         </el-table-column>
@@ -122,19 +144,22 @@
         </el-form-item>
         
         <el-form-item label="内容" prop="content">
-          <Toolbar
-            :editor="editorRef"
-            :defaultConfig="toolbarConfig"
-            :mode="mode"
-            style="border-bottom: 1px solid #ccc"
-          />
-          <Editor
-            :defaultConfig="editorConfig"
-            :mode="mode"
-            v-model="articleForm.content"
-            style="height: 400px; overflow-y: hidden"
-            @onCreated="handleEditorCreated"
-          />
+          <div class="editor-container">
+            <Toolbar
+              :editor="editorRef"
+              :defaultConfig="toolbarConfig"
+              :mode="mode"
+              style="border-bottom: 1px solid #ccc"
+            />
+            <Editor
+              :defaultConfig="editorConfig"
+              :mode="mode"
+              v-model="articleForm.content"
+              style="height: 400px; overflow-y: auto"
+              @onCreated="handleEditorCreated"
+              @onChange="handleEditorChange"
+            />
+          </div>
         </el-form-item>
       </el-form>
       
@@ -209,6 +234,11 @@ const handleEditorCreated = (editor) => {
   editorRef.value = editor
 }
 
+const handleEditorChange = (editor) => {
+  // 确保内容同步到表单
+  articleForm.content = editor.getHtml()
+}
+
 onBeforeUnmount(() => {
   const editor = editorRef.value
   if (editor == null) return
@@ -228,7 +258,8 @@ const fetchData = async () => {
     const params = {
       pageNum: pagination.pageNum,
       pageSize: pagination.pageSize,
-      ...searchForm
+      title: searchForm.title || undefined,
+      categoryId: searchForm.categoryId || undefined
     }
     const res = await getArticleList(params)
     articleList.value = res.data.list || []
@@ -283,17 +314,54 @@ const handleCreate = () => {
   articleForm.content = ''
   articleForm.tagIds = []
   dialogVisible.value = true
+  nextTick(() => {
+    if (editorRef.value) {
+      editorRef.value.clear()
+    }
+  })
 }
 
 const handleEdit = (row) => {
   dialogType.value = 'edit'
-  Object.assign(articleForm, row)
-  articleForm.tagIds = row.tags?.map(t => t.id) || []
+  Object.assign(articleForm, {
+    id: row.id,
+    title: row.title,
+    categoryId: row.categoryId,
+    summary: row.summary,
+    content: row.content || '',
+    tagIds: row.tags?.map(t => t.id) || []
+  })
   dialogVisible.value = true
+  nextTick(() => {
+    if (editorRef.value && articleForm.content) {
+      editorRef.value.setHtml(articleForm.content)
+    } else if (editorRef.value) {
+      editorRef.value.clear()
+    }
+  })
 }
 
 const handleView = (row) => {
   router.push(`/articles/${row.id}`)
+}
+
+const handleSubmitAudit = (row) => {
+  if (row.status !== 'DRAFT') {
+    ElMessage.warning('只有草稿状态的文章可以提交审核')
+    return
+  }
+  
+  ElMessageBox.confirm('确定要提交该文章进行审核吗？', '提示', {
+    type: 'warning'
+  }).then(async () => {
+    try {
+      await submitArticle(row.id)
+      ElMessage.success('提交审核成功')
+      fetchData()
+    } catch (error) {
+      console.error('提交审核失败:', error)
+    }
+  })
 }
 
 const handleDelete = (row) => {
@@ -393,12 +461,23 @@ onMounted(() => {
   .card-header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 10px;
   }
   
   .search-form {
-    .el-form-item {
-      margin-bottom: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0;
+    
+    .search-item {
+      margin-right: 8px;
+      margin-bottom: 8px;
+      
+      :deep(.el-form-item__label) {
+        padding-right: 8px;
+      }
     }
   }
   
@@ -410,6 +489,20 @@ onMounted(() => {
     display: flex;
     justify-content: flex-end;
     margin-top: 16px;
+  }
+  
+  .tag-inline {
+    margin-right: 4px;
+    margin-bottom: 2px;
+  }
+  
+  .more-tags {
+    color: #909399;
+    font-size: 12px;
+  }
+  
+  .no-tags {
+    color: #c0c4cc;
   }
 }
 </style>

@@ -3,17 +3,29 @@ import { ref, computed } from 'vue'
 import { login, logout, getInfo } from '@/api/login'
 import { useRouter } from 'vue-router'
 
+const USER_INFO_KEY = 'knowledge-base-user-info'
+
 export const useUserStore = defineStore('user', () => {
   const router = useRouter()
   
   const token = ref(localStorage.getItem('token') || '')
-  const userInfo = ref(null)
-  const permissions = ref([])
-  const roles = ref([])
+  
+  const savedUserInfo = localStorage.getItem(USER_INFO_KEY)
+  const userInfo = ref(savedUserInfo ? JSON.parse(savedUserInfo) : null)
+  
+  const permissions = ref(userInfo.value?.permissions || [])
+  const roles = ref(userInfo.value?.roles || [])
   
   const isLoggedIn = computed(() => !!token.value)
   
   const userPermissions = computed(() => permissions.value)
+  
+  function saveUserInfo(info) {
+    userInfo.value = info
+    permissions.value = info.permissions || []
+    roles.value = info.roles || []
+    localStorage.setItem(USER_INFO_KEY, JSON.stringify(info))
+  }
   
   async function doLogin(username, password) {
     try {
@@ -21,8 +33,9 @@ export const useUserStore = defineStore('user', () => {
       token.value = res.data.token
       localStorage.setItem('token', token.value)
       
-      // 获取用户信息
-      await fetchUserInfo()
+      if (res.data.user) {
+        saveUserInfo(res.data.user)
+      }
       
       return res
     } catch (error) {
@@ -31,12 +44,15 @@ export const useUserStore = defineStore('user', () => {
   }
   
   async function fetchUserInfo() {
+    if (!token.value) return
+    
     try {
       const res = await getInfo()
-      userInfo.value = res.data
-      permissions.value = res.data.permissions || []
-      roles.value = res.data.roles || []
+      if (res.data) {
+        saveUserInfo(res.data)
+      }
     } catch (error) {
+      console.error('获取用户信息失败:', error)
       throw error
     }
   }
@@ -56,6 +72,7 @@ export const useUserStore = defineStore('user', () => {
     permissions.value = []
     roles.value = []
     localStorage.removeItem('token')
+    localStorage.removeItem(USER_INFO_KEY)
   }
   
   function hasPermission(permission) {
