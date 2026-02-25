@@ -35,4 +35,10 @@ public class User {
     @TableLogic
     private Integer deleted;
     
+    @TableField(exist = false)
+    private String roleNames;
+    
+    @TableField(exist = false)
+    private String roleIds;
+    
 }

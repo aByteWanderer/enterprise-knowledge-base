@@ -61,6 +61,222 @@ body {
   --el-message-bg-color: #edf2fc;
 }
 
+// Dark mode
+html.dark {
+  color-scheme: dark;
+  
+  body {
+    background-color: #141414;
+    color: #e5eaf3;
+  }
+  
+  // 背景色覆盖
+  .layout-container {
+    background-color: #141414;
+  }
+  
+  .layout-header {
+    background: #1d1e1f !important;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08) !important;
+    
+    .collapse-btn {
+      color: #e5eaf3 !important;
+    }
+    
+    .username {
+      color: #e5eaf3 !important;
+    }
+  }
+  
+  .layout-main {
+    background-color: #141414 !important;
+  }
+  
+  // 侧边栏
+  .layout-aside {
+    background-color: #141414 !important;
+    
+    .logo {
+      background-color: #1d1e1f !important;
+    }
+  }
+  
+  // Element Plus 组件暗色化
+  .el-card {
+    --el-card-bg-color: #1d1e1f;
+    --el-card-border-color: #414243;
+    background-color: #1d1e1f;
+    border-color: #414243;
+  }
+  
+  .el-table {
+    --el-table-bg-color: #1d1e1f;
+    --el-table-tr-bg-color: #1d1e1f;
+    --el-table-header-bg-color: #262727;
+    --el-table-row-hover-bg-color: #262727;
+    --el-table-border-color: #414243;
+    --el-table-text-color: #e5eaf3;
+    --el-table-header-text-color: #cfd3dc;
+    background-color: #1d1e1f;
+    
+    th.el-table__cell {
+      background-color: #262727 !important;
+    }
+  }
+  
+  .el-dialog {
+    --el-dialog-bg-color: #1d1e1f;
+    background-color: #1d1e1f;
+    border: 1px solid #414243;
+    
+    .el-dialog__title {
+      color: #e5eaf3;
+    }
+  }
+  
+  .el-form-item__label {
+    color: #cfd3dc;
+  }
+  
+  .el-input__wrapper {
+    background-color: #262727;
+    box-shadow: 0 0 0 1px #414243 inset;
+    
+    .el-input__inner {
+      color: #e5eaf3;
+    }
+  }
+  
+  .el-select__wrapper {
+    background-color: #262727;
+    box-shadow: 0 0 0 1px #414243 inset;
+  }
+  
+  .el-textarea__inner {
+    background-color: #262727;
+    color: #e5eaf3;
+    box-shadow: 0 0 0 1px #414243 inset;
+  }
+  
+  .el-radio__label {
+    color: #e5eaf3;
+  }
+  
+  .el-tag {
+    --el-tag-bg-color: #262727;
+    --el-tag-border-color: #414243;
+    --el-tag-text-color: #e5eaf3;
+  }
+  
+  .el-button {
+    --el-button-bg-color: #262727;
+    --el-button-border-color: #414243;
+    --el-button-text-color: #e5eaf3;
+    --el-button-hover-bg-color: #363637;
+    --el-button-hover-border-color: #515254;
+    --el-button-hover-text-color: #ffffff;
+    
+    &.el-button--primary {
+      --el-button-bg-color: #409EFF;
+      --el-button-border-color: #409EFF;
+      --el-button-hover-bg-color: #66b1ff;
+      --el-button-hover-border-color: #66b1ff;
+      --el-button-text-color: #ffffff;
+    }
+    
+    &.el-button--danger {
+      --el-button-bg-color: #f56c6c;
+      --el-button-border-color: #f56c6c;
+    }
+  }
+  
+  .el-dropdown-menu {
+    --el-dropdown-menuItem-hover-fill: #262727;
+    --el-dropdown-menuItem-hover-color: #409EFF;
+    background-color: #1d1e1f;
+    border-color: #414243;
+    
+    .el-dropdown-menu__item {
+      color: #e5eaf3;
+    }
+  }
+  
+  .el-pagination {
+    --el-pagination-bg-color: #262727;
+    --el-pagination-text-color: #e5eaf3;
+    --el-pagination-button-bg-color: #262727;
+    --el-pagination-button-color: #e5eaf3;
+    --el-pagination-hover-color: #409EFF;
+  }
+  
+  .el-menu {
+    --el-menu-bg-color: #141414;
+    --el-menu-text-color: #e5eaf3;
+    --el-menu-hover-bg-color: #262727;
+    --el-menu-active-color: #409EFF;
+    background-color: #141414;
+    border-right-color: #414243;
+    
+    .el-menu-item {
+      color: #e5eaf3;
+      
+      &:hover {
+        background-color: #262727;
+      }
+      
+      &.is-active {
+        background-color: #262727 !important;
+        color: #409EFF;
+      }
+    }
+  }
+  
+  .el-input__wrapper,
+  .el-select__wrapper {
+    &.is-focus {
+      box-shadow: 0 0 0 1px #409EFF inset !important;
+    }
+  }
+  
+  .el-scrollbar__thumb {
+    background: #4a4a4a;
+    
+    &:hover {
+      background: #5e5e5e;
+    }
+  }
+  
+  .el-empty__description {
+    color: #8b8b8b;
+  }
+  
+  // 分页器暗色化
+  .el-pager li {
+    background: #262727;
+    color: #e5eaf3;
+    
+    &:hover {
+      color: #409EFF;
+    }
+    
+    &.is-active {
+      background: #409EFF;
+      color: #fff;
+    }
+  }
+  
+  .el-pagination .btn-prev,
+  .el-pagination .btn-next {
+    background: #262727;
+    color: #e5eaf3;
+  }
+  
+  // 搜索表单
+  .el-form-item__label {
+    color: #cfd3dc;
+  }
+}
+
 // 滚动条样式
 ::-webkit-scrollbar {
   width: 6px;

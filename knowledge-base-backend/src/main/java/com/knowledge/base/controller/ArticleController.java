@@ -1,16 +1,18 @@
 package com.knowledge.base.controller;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.github.pagehelper.PageInfo;
 import com.knowledge.base.common.Result;
 import com.knowledge.base.dto.ArticleDTO;
-import com.knowledge.base.entity.Article;
+import com.knowledge.base.entity.User;
 import com.knowledge.base.service.ArticleService;
 import com.knowledge.base.vo.ArticleVO;
-import com.github.pagehelper.PageInfo;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -54,10 +56,18 @@ public class ArticleController {
         return Result.success(pageInfo);
     }
     
+    private Long getCurrentUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.getPrincipal() instanceof User) {
+            return ((User) authentication.getPrincipal()).getId();
+        }
+        return 1L;
+    }
+    
     @Operation(summary = "创建文章")
     @PostMapping
     public Result<Long> createArticle(@Valid @RequestBody ArticleDTO articleDTO) {
-        Long articleId = articleService.createArticle(articleDTO, 1L);
+        Long articleId = articleService.createArticle(articleDTO, getCurrentUserId());
         return Result.success(articleId);
     }
     
@@ -65,7 +75,7 @@ public class ArticleController {
     @PutMapping("/{id}")
     public Result<Void> updateArticle(@PathVariable Long id, @Valid @RequestBody ArticleDTO articleDTO) {
         articleDTO.setId(id);
-        articleService.updateArticle(articleDTO, 1L);
+        articleService.updateArticle(articleDTO, getCurrentUserId());
         return Result.success();
     }
     
@@ -88,7 +98,7 @@ public class ArticleController {
     @Operation(summary = "提交审核")
     @PostMapping("/{id}/submit")
     public Result<Void> submitForReview(@PathVariable Long id) {
-        articleService.submitForReview(id, 1L);
+        articleService.submitForReview(id, getCurrentUserId());
         return Result.success();
     }
     
@@ -99,7 +109,7 @@ public class ArticleController {
             @PathVariable Long id,
             @RequestParam String status,
             @RequestParam(required = false) String remark) {
-        articleService.auditArticle(id, status, remark, 1L);
+        articleService.auditArticle(id, status, remark, getCurrentUserId());
         return Result.success();
     }
     

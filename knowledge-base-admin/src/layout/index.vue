@@ -38,6 +38,12 @@
         </div>
         
         <div class="header-right">
+          <el-button
+            :icon="themeStore.isDark ? Sunny : Moon"
+            circle
+            @click="themeStore.toggleTheme"
+            class="theme-toggle"
+          />
           <el-dropdown @command="handleCommand">
             <span class="user-info">
               <el-avatar :size="32" :src="userInfo?.avatar || ''">
@@ -79,11 +85,14 @@
 import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
+import { useThemeStore } from '@/stores/theme'
 import { ElMessageBox, ElMessage } from 'element-plus'
+import { Sunny, Moon } from '@element-plus/icons-vue'
 
 const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
+const themeStore = useThemeStore()
 
 const isCollapse = ref(false)
 const userInfo = computed(() => userStore.userInfo)
@@ -208,6 +217,14 @@ const handleCommand = (command) => {
   }
   
   .header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    
+    .theme-toggle {
+      font-size: 18px;
+    }
+    
     .user-info {
       display: flex;
       align-items: center;

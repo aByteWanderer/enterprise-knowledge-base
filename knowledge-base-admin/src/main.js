@@ -37,4 +37,10 @@ app.config.errorHandler = (err, vm, info) => {
   console.error('全局错误:', err)
 }
 
+// 应用保存的主题
+const savedTheme = localStorage.getItem('theme')
+if (savedTheme === 'dark') {
+  document.documentElement.classList.add('dark')
+}
+
 app.mount('#app')

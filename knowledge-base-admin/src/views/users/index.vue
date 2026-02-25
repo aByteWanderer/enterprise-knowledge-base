@@ -28,6 +28,18 @@
         <el-table-column prop="username" label="用户名" width="150" />
         <el-table-column prop="email" label="邮箱" width="200" />
         <el-table-column prop="phone" label="手机号" width="150" />
+        <el-table-column prop="roleNames" label="角色" width="200">
+          <template #default="{ row }">
+            <el-tag
+              v-for="role in (row.roleNames || '').split(',').filter(r => r)"
+              :key="role"
+              size="small"
+              class="role-tag"
+            >
+              {{ role }}
+            </el-tag>
+          </template>
+        </el-table-column>
         <el-table-column prop="status" label="状态" width="100">
           <template #default="{ row }">
             <el-tag :type="row.status === 1 ? 'success' : 'danger'">
@@ -46,13 +58,31 @@
       </el-table>
     </el-card>
     
-    <!-- 用户编辑对话框 -->
+    <!-- 用户编辑/分配角色对话框 -->
     <el-dialog
       v-model="dialogVisible"
-      :title="dialogType === 'create' ? '新建用户' : '编辑用户'"
+      :title="dialogType === 'role' ? '分配角色' : (dialogType === 'create' ? '新建用户' : '编辑用户')"
       width="500px"
     >
-      <el-form ref="formRef" :model="userForm" :rules="formRules" label-width="80px">
+      <!-- 分配角色表单 -->
+      <el-form v-if="dialogType === 'role'" label-width="80px">
+        <el-form-item label="用户名">
+          <span>{{ userForm.username }}</span>
+        </el-form-item>
+        <el-form-item label="角色">
+          <el-select v-model="userForm.roleIds" multiple placeholder="请选择角色" style="width: 100%;">
+            <el-option
+              v-for="role in roleList"
+              :key="role.id"
+              :label="role.roleName"
+              :value="role.id"
+            />
+          </el-select>
+        </el-form-item>
+      </el-form>
+      
+      <!-- 用户编辑表单 -->
+      <el-form v-else ref="formRef" :model="userForm" :rules="formRules" label-width="80px">
         <el-form-item label="用户名" prop="username">
           <el-input v-model="userForm.username" :disabled="dialogType === 'edit'" />
         </el-form-item>
@@ -91,7 +121,7 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { getUserList, createUser, updateUser, deleteUser } from '@/api/user'
+import { getUserList, createUser, updateUser, deleteUser, assignRoles } from '@/api/user'
 import { getRoleList } from '@/api/role'
 
 const loading = ref(false)
@@ -175,8 +205,18 @@ const handleEdit = (row) => {
 }
 
 const handleRoles = (row) => {
-  // TODO: 打开分配角色对话框
-  console.log('分配角色:', row)
+  dialogType.value = 'role'
+  userForm.id = row.id
+  userForm.username = row.username
+  // 解析角色ID数组
+  if (row.roleIds) {
+    userForm.roleIds = typeof row.roleIds === 'string' 
+      ? row.roleIds.split(',').map(id => parseInt(id, 10)) 
+      : row.roleIds
+  } else {
+    userForm.roleIds = []
+  }
+  dialogVisible.value = true
 }
 
 const handleDelete = (row) => {
@@ -195,14 +235,19 @@ const handleDelete = (row) => {
 
 const handleSave = async () => {
   try {
-    await formRef.value.validate()
-    
-    if (dialogType.value === 'create') {
-      await createUser(userForm)
-      ElMessage.success('创建成功')
+    if (dialogType.value === 'role') {
+      await assignRoles(userForm.id, userForm.roleIds)
+      ElMessage.success('角色分配成功')
     } else {
-      await updateUser(userForm.id, userForm)
-      ElMessage.success('更新成功')
+      await formRef.value.validate()
+      
+      if (dialogType.value === 'create') {
+        await createUser(userForm)
+        ElMessage.success('创建成功')
+      } else {
+        await updateUser(userForm.id, userForm)
+        ElMessage.success('更新成功')
+      }
     }
     
     dialogVisible.value = false
@@ -228,6 +273,11 @@ onMounted(() => {
   
   .toolbar {
     margin-bottom: 16px;
+  }
+  
+  .role-tag {
+    margin-right: 4px;
+    margin-bottom: 4px;
   }
 }
 </style>

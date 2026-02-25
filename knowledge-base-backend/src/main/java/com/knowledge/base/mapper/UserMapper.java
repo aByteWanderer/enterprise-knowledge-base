@@ -47,7 +47,8 @@ public interface UserMapper extends BaseMapper<User> {
     /**
      * 查询所有用户（带角色）
      */
-    @Select("SELECT u.*, GROUP_CONCAT(r.role_name) as role_names " +
+    @Select("SELECT u.*, GROUP_CONCAT(DISTINCT r.role_name SEPARATOR ',') as roleNames, " +
+            "GROUP_CONCAT(DISTINCT r.id SEPARATOR ',') as roleIds " +
             "FROM tb_users u " +
             "LEFT JOIN tb_user_roles ur ON u.id = ur.user_id " +
             "LEFT JOIN tb_roles r ON ur.role_id = r.id " +

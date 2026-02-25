@@ -192,18 +192,30 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void submitForReview(Long id, Long operatorId) {
+        log.info("submitForReview called for article id: {}", id);
+        
         Article article = articleMapper.selectById(id);
         if (article == null) {
+            log.warn("Article not found with id: {}", id);
             throw new BusinessException(ResultCode.ARTICLE_NOT_FOUND);
         }
         
+        log.info("Article status before submit: {}", article.getStatus());
+        
         if (!"DRAFT".equals(article.getStatus())) {
+            log.warn("Article status is not DRAFT, current status: {}", article.getStatus());
             throw new BusinessException(ResultCode.ERROR, "只有草稿状态的文章可以提交审核");
         }
         
         article.setStatus("PENDING");
         article.setUpdatedAt(LocalDateTime.now());
-        articleMapper.updateById(article);
+        
+        int rows = articleMapper.updateById(article);
+        log.info("Update rows affected: {}", rows);
+        
+        // Verify the update
+        Article updated = articleMapper.selectById(id);
+        log.info("Article status after submit: {}", updated.getStatus());
     }
     
     @Override
@@ -232,7 +244,13 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     
     @Override
     public List<ArticleVO> selectPendingArticles() {
-        return articleMapper.selectPendingArticles();
+        List<ArticleVO> articles = articleMapper.selectPendingArticles();
+        log.info("selectPendingArticles found {} articles", articles.size());
+        for (ArticleVO article : articles) {
+            log.info("Pending article: id={}, title={}, status={}", 
+                    article.getId(), article.getTitle(), article.getStatus());
+        }
+        return articles;
     }
     
     @Override

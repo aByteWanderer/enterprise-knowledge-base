@@ -67,10 +67,13 @@
       v-model="permissionDialogVisible"
       title="分配权限"
       width="500px"
+      :close-on-click-modal="false"
+      :close-on-press-escape="false"
+      @close="handlePermissionDialogClose"
     >
       <el-tree
-        ref="permissionTree"
-        :data="permissionTree"
+        ref="permissionTreeRef"
+        :data="permissionTreeData"
         :props="{ label: 'permissionName', children: 'children' }"
         show-checkbox
         node-key="id"
@@ -97,7 +100,7 @@ const dialogVisible = ref(false)
 const permissionDialogVisible = ref(false)
 const dialogType = ref('create')
 const formRef = ref(null)
-const permissionTree = ref(null)
+const permissionTreeRef = ref(null)
 const currentRoleId = ref(null)
 const checkedPermissions = ref([])
 
@@ -175,12 +178,24 @@ const handleEdit = (row) => {
 const handlePermissions = async (row) => {
   currentRoleId.value = row.id
   try {
-    const res = await getRolePermissions(row.id)
-    checkedPermissions.value = res.data || []
+    // 先获取所有权限
+    const res = await getPermissionList()
+    permissionList.value = res.data || []
+    permissionTreeData.value = buildPermissionTree(permissionList.value)
+    
+    // 再获取角色已有权限
+    const roleRes = await getRolePermissions(row.id)
+    checkedPermissions.value = roleRes.data || []
     permissionDialogVisible.value = true
   } catch (error) {
-    console.error('获取角色权限失败:', error)
+    console.error('获取权限列表失败:', error)
   }
+}
+
+const handlePermissionDialogClose = () => {
+  permissionTreeData.value = []
+  checkedPermissions.value = []
+  currentRoleId.value = null
 }
 
 const handleDelete = (row) => {
@@ -217,7 +232,12 @@ const handleSave = async () => {
 }
 
 const handleSavePermissions = async () => {
-  const checkedNodes = permissionTree.value.getCheckedNodes()
+  if (!permissionTreeRef.value) {
+    ElMessage.error('权限树加载失败，请重试')
+    return
+  }
+  
+  const checkedNodes = permissionTreeRef.value.getCheckedNodes()
   const permissionIds = checkedNodes.map(n => n.id)
   
   try {

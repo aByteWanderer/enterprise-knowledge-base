@@ -9,10 +9,10 @@ echo 使用 Java 版本:
 java -version
 
 echo.
-echo 正在编译项目...
+echo 正在打包项目...
 cd /d "%~dp0"
-call mvn clean package -DskipTests -f pom.xml
+call mvn clean package -DskipTests -Dmaven.test.skip=true -f pom.xml
 
 echo.
-echo 编译完成，正在启动应用...
+echo 打包完成，正在启动应用...
 java -jar target\knowledge-base-backend-1.0.0.jar --spring.profiles.active=dev
