@@ -199,22 +199,79 @@ INSERT INTO tb_roles (role_name, role_code, description) VALUES
 ('审核员', 'auditor', '文章审核人员'),
 ('普通用户', 'user', '普通用户');
 
--- 插入权限
-INSERT INTO tb_permissions (permission_name, permission_code, type, parent_id, path, icon, order_num) VALUES 
-('系统管理', 'system', 'menu', 0, '/system', 'Setting', 1),
-('用户管理', 'user:list', 'button', 1, '/system/user', '', 1),
-('用户管理', 'user', 'menu', 0, '/system/user', 'User', 2),
-('角色管理', 'role', 'menu', 0, '/system/role', 'UserFilled', 3),
-('权限管理', 'permission', 'menu', 0, '/system/permission', 'Key', 4),
-('内容管理', 'content', 'menu', 0, '/content', 'Document', 5),
-('文章管理', 'article', 'menu', 0, '/content/article', 'Document', 6),
-('分类管理', 'category', 'menu', 0, '/content/category', 'Folder', 7),
-('标签管理', 'tag', 'menu', 0, '/content/tag', 'PriceTag', 8),
-('审核管理', 'audit', 'menu', 0, '/audit', 'Stamp', 9);
+-- 插入权限（菜单 + 按钮）
+INSERT INTO tb_permissions (permission_name, permission_code, type, parent_id, path, icon, order_num, status) VALUES 
+-- 系统管理菜单
+('系统管理', 'system', 'menu', 0, '/system', 'Setting', 1, 1),
+('用户管理', 'user', 'menu', 1, '/system/user', 'User', 1, 1),
+('用户查询', 'user:list', 'button', 2, '', '', 1, 1),
+('用户新增', 'user:create', 'button', 2, '', '', 2, 1),
+('用户编辑', 'user:update', 'button', 2, '', '', 3, 1),
+('用户删除', 'user:delete', 'button', 2, '', '', 4, 1),
+('分配角色', 'user:assignRole', 'button', 2, '', '', 5, 1),
+('重置密码', 'user:resetPassword', 'button', 2, '', '', 6, 1),
+('角色管理', 'role', 'menu', 1, '/system/role', 'UserFilled', 2, 1),
+('角色查询', 'role:list', 'button', 9, '', '', 1, 1),
+('角色新增', 'role:create', 'button', 9, '', '', 2, 1),
+('角色编辑', 'role:update', 'button', 9, '', '', 3, 1),
+('角色删除', 'role:delete', 'button', 9, '', '', 4, 1),
+('分配权限', 'role:assignPermission', 'button', 9, '', '', 5, 1),
+('权限管理', 'permission', 'menu', 1, '/system/permission', 'Key', 3, 1),
+('权限查询', 'permission:list', 'button', 15, '', '', 1, 1),
+('权限新增', 'permission:create', 'button', 15, '', '', 2, 1),
+('权限编辑', 'permission:update', 'button', 15, '', '', 3, 1),
+('权限删除', 'permission:delete', 'button', 15, '', '', 4, 1),
+-- 内容管理菜单
+('内容管理', 'content', 'menu', 0, '/content', 'Document', 2, 1),
+('文章管理', 'article', 'menu', 20, '/content/article', 'Document', 1, 1),
+('文章查询', 'article:list', 'button', 21, '', '', 1, 1),
+('文章新增', 'article:create', 'button', 21, '', '', 2, 1),
+('文章编辑', 'article:update', 'button', 21, '', '', 3, 1),
+('文章删除', 'article:delete', 'button', 21, '', '', 4, 1),
+('提交审核', 'article:submit', 'button', 21, '', '', 5, 1),
+('审核文章', 'article:audit', 'button', 21, '', '', 6, 1),
+('发布文章', 'article:publish', 'button', 21, '', '', 7, 1),
+('文章归档', 'article:archive', 'button', 21, '', '', 8, 1),
+('分类管理', 'category', 'menu', 20, '/content/category', 'Folder', 2, 1),
+('分类查询', 'category:list', 'button', 30, '', '', 1, 1),
+('分类新增', 'category:create', 'button', 30, '', '', 2, 1),
+('分类编辑', 'category:update', 'button', 30, '', '', 3, 1),
+('分类删除', 'category:delete', 'button', 30, '', '', 4, 1),
+('标签管理', 'tag', 'menu', 20, '/content/tag', 'PriceTag', 3, 1),
+('标签查询', 'tag:list', 'button', 35, '', '', 1, 1),
+('标签新增', 'tag:create', 'button', 35, '', '', 2, 1),
+('标签编辑', 'tag:update', 'button', 35, '', '', 3, 1),
+('标签删除', 'tag:delete', 'button', 35, '', '', 4, 1),
+-- 审核管理
+('审核管理', 'audit', 'menu', 0, '/audit', 'Stamp', 3, 1),
+('审核查询', 'audit:list', 'button', 40, '', '', 1, 1),
+('审核操作', 'audit:operate', 'button', 40, '', '', 2, 1);
 
--- 分配权限给超级管理员角色
+-- 分配权限给超级管理员角色（所有权限）
 INSERT INTO tb_role_permissions (role_id, permission_id) VALUES 
-(1, 1), (1, 2), (1, 3), (1, 4), (1, 5), (1, 6), (1, 7), (1, 8), (1, 9), (1, 10);
+-- 系统管理权限
+(1, 1), (1, 2), (1, 3), (1, 4), (1, 5), (1, 6), (1, 7), (1, 8), (1, 9),
+(1, 10), (1, 11), (1, 12), (1, 13), (1, 14), (1, 15), (1, 16), (1, 17), (1, 18), (1, 19),
+-- 内容管理权限
+(1, 20), (1, 21), (1, 22), (1, 23), (1, 24), (1, 25), (1, 26), (1, 27), (1, 28), (1, 29),
+(1, 30), (1, 31), (1, 32), (1, 33), (1, 34), (1, 35), (1, 36), (1, 37), (1, 38), (1, 39),
+-- 审核管理权限
+(1, 40), (1, 41), (1, 42);
+
+-- 分配权限给管理员角色（大部分权限）
+INSERT INTO tb_role_permissions (role_id, permission_id) VALUES 
+-- 系统管理权限
+(2, 1), (2, 2), (2, 3), (2, 4), (2, 5), (2, 6), (2, 7), (2, 8), (2, 9),
+(2, 10), (2, 11), (2, 12), (2, 13), (2, 14), (2, 15), (2, 16), (2, 17), (2, 18), (2, 19),
+-- 内容管理权限
+(2, 20), (2, 21), (2, 22), (2, 23), (2, 24), (2, 25), (2, 26), (2, 27), (2, 28), (2, 29),
+(2, 30), (2, 31), (2, 32), (2, 33), (2, 34), (2, 35), (2, 36), (2, 37), (2, 38), (2, 39),
+-- 审核管理权限
+(2, 40), (2, 41), (2, 42);
+
+-- 分配权限给普通用户（只读权限）
+INSERT INTO tb_role_permissions (role_id, permission_id) VALUES 
+(5, 21), (5, 22), (5, 30), (5, 31), (5, 35), (5, 36);
 
 -- 分配角色给管理员用户
 INSERT INTO tb_user_roles (user_id, role_id) VALUES 

@@ -1,6 +1,7 @@
 package com.knowledge.base.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.knowledge.base.dto.CreateUserResponseDTO;
 import com.knowledge.base.dto.UserDTO;
 import com.knowledge.base.entity.User;
 import com.knowledge.base.vo.UserInfoVO;
@@ -27,6 +28,16 @@ public interface UserService extends IService<User> {
      * 创建用户
      */
     Long createUser(UserDTO userDTO);
+    
+    /**
+     * 创建用户（返回初始密码）
+     */
+    CreateUserResponseDTO createUserWithPassword(UserDTO userDTO);
+    
+    /**
+     * 重置密码（返回新密码）
+     */
+    String resetPasswordAndGet(Long id);
     
     /**
      * 更新用户

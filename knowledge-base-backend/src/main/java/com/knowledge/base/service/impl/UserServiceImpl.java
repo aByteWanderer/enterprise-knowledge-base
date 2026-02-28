@@ -3,6 +3,7 @@ package com.knowledge.base.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.knowledge.base.common.ResultCode;
+import com.knowledge.base.dto.CreateUserResponseDTO;
 import com.knowledge.base.dto.UserDTO;
 import com.knowledge.base.entity.User;
 import com.knowledge.base.entity.UserRole;
@@ -31,6 +32,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
     
+    private static final String DEFAULT_PASSWORD = "123456";
+    
     private final UserMapper userMapper;
     private final UserRoleMapper userRoleMapper;
     private final PasswordEncoder passwordEncoder;
@@ -48,6 +51,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Long createUser(UserDTO userDTO) {
+        CreateUserResponseDTO result = createUserWithPassword(userDTO);
+        return result.getUserId();
+    }
+    
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public CreateUserResponseDTO createUserWithPassword(UserDTO userDTO) {
         // 检查用户名是否存在
         User existUser = selectByUsername(userDTO.getUsername());
         if (existUser != null) {
@@ -66,7 +76,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         // 设置默认密码
         String password = userDTO.getPassword();
         if (password == null || password.isEmpty()) {
-            password = "123456";
+            password = DEFAULT_PASSWORD;
         }
         user.setPassword(passwordEncoder.encode(password));
         user.setStatus(userDTO.getStatus() != null ? userDTO.getStatus() : 1);
@@ -78,7 +88,23 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             assignRoles(user.getId(), userDTO.getRoleIds());
         }
         
-        return user.getId();
+        return new CreateUserResponseDTO(user.getId(), password);
+    }
+    
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public String resetPasswordAndGet(Long id) {
+        User user = userMapper.selectById(id);
+        if (user == null) {
+            throw new BusinessException(ResultCode.USER_NOT_FOUND);
+        }
+        
+        String newPassword = DEFAULT_PASSWORD;
+        user.setPassword(passwordEncoder.encode(newPassword));
+        user.setUpdatedAt(LocalDateTime.now());
+        userMapper.updateById(user);
+        
+        return newPassword;
     }
     
     @Override

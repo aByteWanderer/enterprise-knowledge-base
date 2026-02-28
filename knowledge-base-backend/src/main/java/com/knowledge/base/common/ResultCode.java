@@ -32,6 +32,7 @@ public enum ResultCode {
     ROLE_NOT_FOUND(2002, "角色不存在"),
     ROLE_EXISTS(2003, "角色已存在"),
     PERMISSION_NOT_FOUND(2004, "权限不存在"),
+    PERMISSION_EXISTS(2005, "权限编码已存在"),
     
     ARTICLE_NOT_FOUND(2100, "文章不存在"),
     CATEGORY_NOT_FOUND(2101, "分类不存在"),

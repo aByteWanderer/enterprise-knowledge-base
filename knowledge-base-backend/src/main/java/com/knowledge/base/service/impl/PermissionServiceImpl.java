@@ -42,6 +42,17 @@ public class PermissionServiceImpl extends ServiceImpl<PermissionMapper, Permiss
     
     @Override
     public Long createPermission(Permission permission) {
+        // 检查权限编码是否已存在
+        Permission exist = permissionMapper.selectList(
+            new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<Permission>()
+                .eq("permission_code", permission.getPermissionCode())
+                .eq("deleted", 0)
+        ).stream().findFirst().orElse(null);
+        
+        if (exist != null) {
+            throw new BusinessException(ResultCode.PERMISSION_EXISTS, "权限编码已存在: " + permission.getPermissionCode());
+        }
+        
         permissionMapper.insert(permission);
         return permission.getId();
     }
@@ -76,10 +87,11 @@ public class PermissionServiceImpl extends ServiceImpl<PermissionMapper, Permiss
         List<Permission> roots = new ArrayList<>();
         
         for (Permission permission : permissions) {
-            if (permission.getParentId() == null || permission.getParentId() == 0L) {
+            Long parentId = permission.getParentId();
+            if (parentId == null || parentId == 0L || parentId.equals(0)) {
                 roots.add(permission);
             } else {
-                parentMap.computeIfAbsent(permission.getParentId(), k -> new ArrayList<>()).add(permission);
+                parentMap.computeIfAbsent(parentId, k -> new ArrayList<>()).add(permission);
             }
         }
         

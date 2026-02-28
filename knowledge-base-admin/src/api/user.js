@@ -46,6 +46,13 @@ export function resetPassword(id, newPassword) {
   })
 }
 
+export function resetPasswordWithResult(id) {
+  return request({
+    url: `/users/${id}/password-reset`,
+    method: 'put'
+  })
+}
+
 export function assignRoles(id, roleIds) {
   return request({
     url: `/users/${id}/roles`,

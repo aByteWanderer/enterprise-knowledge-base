@@ -19,7 +19,7 @@
       </template>
       
       <div class="toolbar">
-        <el-button type="primary" @click="handleCreate">
+        <el-button v-if="hasPermission('user:create')" type="primary" @click="handleCreate">
           <el-icon><Plus /></el-icon>新建用户
         </el-button>
       </div>
@@ -48,11 +48,12 @@
           </template>
         </el-table-column>
         <el-table-column prop="createdAt" label="创建时间" width="180" />
-        <el-table-column label="操作" width="250" fixed="right">
+        <el-table-column label="操作" width="300" fixed="right">
           <template #default="{ row }">
-            <el-button type="primary" link @click="handleEdit(row)">编辑</el-button>
-            <el-button type="primary" link @click="handleRoles(row)">分配角色</el-button>
-            <el-button type="danger" link @click="handleDelete(row)">删除</el-button>
+            <el-button v-if="hasPermission('user:update')" type="primary" link @click="handleEdit(row)">编辑</el-button>
+            <el-button v-if="hasPermission('user:assignRole')" type="primary" link @click="handleRoles(row)">分配角色</el-button>
+            <el-button v-if="hasPermission('user:resetPassword')" type="warning" link @click="handleResetPassword(row)">重置密码</el-button>
+            <el-button v-if="hasPermission('user:delete')" type="danger" link @click="handleDelete(row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -121,13 +122,16 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { getUserList, createUser, updateUser, deleteUser, assignRoles } from '@/api/user'
+import { getUserList, createUser, updateUser, deleteUser, assignRoles, resetPasswordWithResult } from '@/api/user'
 import { getRoleList } from '@/api/role'
+import { usePermission } from '@/composables/usePermission'
 
 const loading = ref(false)
 const dialogVisible = ref(false)
 const dialogType = ref('create')
 const formRef = ref(null)
+
+const { hasPermission } = usePermission()
 
 const userList = ref([])
 const roleList = ref([])
@@ -219,6 +223,29 @@ const handleRoles = (row) => {
   dialogVisible.value = true
 }
 
+const handleResetPassword = async (row) => {
+  try {
+    await ElMessageBox.confirm(`确定要重置用户 "${row.username}" 的密码吗？`, '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    })
+    
+    const res = await resetPasswordWithResult(row.id)
+    const newPassword = res.data
+    
+    ElMessageBox.alert(`密码已重置，新密码为：<strong>${newPassword}</strong><br><br>请告知用户及时修改密码！`, '密码重置成功', {
+      confirmButtonText: '我知道了',
+      dangerouslyUseHTMLString: true,
+      type: 'success'
+    })
+  } catch (error) {
+    if (error !== 'cancel') {
+      console.error('重置密码失败:', error)
+    }
+  }
+}
+
 const handleDelete = (row) => {
   ElMessageBox.confirm('确定要删除该用户吗？', '提示', {
     type: 'warning'
@@ -242,8 +269,13 @@ const handleSave = async () => {
       await formRef.value.validate()
       
       if (dialogType.value === 'create') {
-        await createUser(userForm)
-        ElMessage.success('创建成功')
+        const res = await createUser(userForm)
+        const initialPassword = res.data.initialPassword
+        ElMessageBox.alert(`用户创建成功！<br><br>初始密码为：<strong>${initialPassword}</strong><br><br>请告知用户及时修改密码！`, '创建用户成功', {
+          confirmButtonText: '我知道了',
+          dangerouslyUseHTMLString: true,
+          type: 'success'
+        })
       } else {
         await updateUser(userForm.id, userForm)
         ElMessage.success('更新成功')

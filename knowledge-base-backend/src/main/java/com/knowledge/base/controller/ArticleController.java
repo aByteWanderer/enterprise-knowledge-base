@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -38,6 +39,7 @@ public class ArticleController {
     
     @Operation(summary = "分页查询文章")
     @GetMapping
+    @PreAuthorize("hasAnyRole('superadmin', 'admin')")
     public Result<PageInfo<ArticleVO>> listArticles(
             @RequestParam(defaultValue = "1") Integer pageNum,
             @RequestParam(defaultValue = "10") Integer pageSize,
@@ -66,6 +68,7 @@ public class ArticleController {
     
     @Operation(summary = "创建文章")
     @PostMapping
+    @PreAuthorize("hasAnyRole('superadmin', 'admin')")
     public Result<Long> createArticle(@Valid @RequestBody ArticleDTO articleDTO) {
         Long articleId = articleService.createArticle(articleDTO, getCurrentUserId());
         return Result.success(articleId);
@@ -73,6 +76,7 @@ public class ArticleController {
     
     @Operation(summary = "更新文章")
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('superadmin', 'admin')")
     public Result<Void> updateArticle(@PathVariable Long id, @Valid @RequestBody ArticleDTO articleDTO) {
         articleDTO.setId(id);
         articleService.updateArticle(articleDTO, getCurrentUserId());
@@ -81,7 +85,7 @@ public class ArticleController {
     
     @Operation(summary = "删除文章")
     @DeleteMapping("/{id}")
-    
+    @PreAuthorize("hasAnyRole('superadmin', 'admin')")
     public Result<Void> deleteArticle(@PathVariable Long id) {
         articleService.deleteArticle(id);
         return Result.success();
@@ -89,7 +93,7 @@ public class ArticleController {
     
     @Operation(summary = "批量删除文章")
     @DeleteMapping("/batch")
-    
+    @PreAuthorize("hasAnyRole('superadmin', 'admin')")
     public Result<Void> deleteArticles(@RequestBody List<Long> ids) {
         articleService.deleteArticles(ids);
         return Result.success();
@@ -97,6 +101,7 @@ public class ArticleController {
     
     @Operation(summary = "提交审核")
     @PostMapping("/{id}/submit")
+    @PreAuthorize("hasAnyRole('superadmin', 'admin')")
     public Result<Void> submitForReview(@PathVariable Long id) {
         articleService.submitForReview(id, getCurrentUserId());
         return Result.success();
@@ -104,7 +109,7 @@ public class ArticleController {
     
     @Operation(summary = "审核文章")
     @PostMapping("/{id}/audit")
-    
+    @PreAuthorize("hasAnyRole('superadmin', 'admin')")
     public Result<Void> auditArticle(
             @PathVariable Long id,
             @RequestParam String status,
@@ -115,7 +120,7 @@ public class ArticleController {
     
     @Operation(summary = "查询待审核文章")
     @GetMapping("/pending")
-    
+    @PreAuthorize("hasAnyRole('superadmin', 'admin')")
     public Result<List<ArticleVO>> getPendingArticles() {
         List<ArticleVO> articles = articleService.selectPendingArticles();
         return Result.success(articles);
@@ -130,7 +135,7 @@ public class ArticleController {
     
     @Operation(summary = "发布文章")
     @PostMapping("/{id}/publish")
-    
+    @PreAuthorize("hasAnyRole('superadmin', 'admin')")
     public Result<Void> publishArticle(@PathVariable Long id) {
         articleService.publishArticle(id);
         return Result.success();
@@ -138,6 +143,7 @@ public class ArticleController {
     
     @Operation(summary = "归档文章")
     @PostMapping("/{id}/archive")
+    @PreAuthorize("hasAnyRole('superadmin', 'admin')")
     public Result<Void> archiveArticle(@PathVariable Long id) {
         articleService.archiveArticle(id);
         return Result.success();
@@ -145,6 +151,7 @@ public class ArticleController {
     
     @Operation(summary = "上传文章图片")
     @PostMapping("/upload/image")
+    @PreAuthorize("hasAnyRole('superadmin', 'admin')")
     public Result<String> uploadImage(@RequestParam("file") MultipartFile file) {
         String imagePath = articleService.uploadImage(file);
         return Result.success(imagePath);
@@ -152,6 +159,7 @@ public class ArticleController {
     
     @Operation(summary = "上传文章附件")
     @PostMapping("/{id}/upload/attachment")
+    @PreAuthorize("hasAnyRole('superadmin', 'admin')")
     public Result<Long> uploadAttachment(@PathVariable Long id, @RequestParam("file") MultipartFile file) {
         Long attachmentId = articleService.uploadAttachment(file, id);
         return Result.success(attachmentId);

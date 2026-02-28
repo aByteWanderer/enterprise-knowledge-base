@@ -79,6 +79,12 @@ const routes = [
         name: 'ChangePassword',
         component: () => import('@/views/password/index.vue'),
         meta: { title: '修改密码', icon: 'Lock' }
+      },
+      {
+        path: 'help',
+        name: 'Help',
+        component: () => import('@/views/help/index.vue'),
+        meta: { title: '使用帮助', icon: 'QuestionFilled' }
       }
     ]
   },

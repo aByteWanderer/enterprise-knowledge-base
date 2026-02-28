@@ -22,21 +22,21 @@
           </template>
         </el-table-column>
         <el-table-column prop="createdAt" label="创建时间" width="180" />
-        <el-table-column label="操作" width="250" fixed="right">
+        <el-table-column label="操作" width="150" fixed="right">
           <template #default="{ row }">
             <el-button type="primary" link @click="handleEdit(row)">编辑</el-button>
-            <el-button type="primary" link @click="handlePermissions(row)">分配权限</el-button>
             <el-button type="danger" link @click="handleDelete(row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
     </el-card>
     
-    <!-- 角色编辑对话框 -->
+    <!-- 角色编辑对话框（包含权限分配） -->
     <el-dialog
       v-model="dialogVisible"
       :title="dialogType === 'create' ? '新建角色' : '编辑角色'"
-      width="500px"
+      width="700px"
+      :close-on-click-modal="false"
     >
       <el-form ref="formRef" :model="roleForm" :rules="formRules" label-width="80px">
         <el-form-item label="角色名称" prop="roleName">
@@ -46,13 +46,34 @@
           <el-input v-model="roleForm.roleCode" :disabled="dialogType === 'edit'" />
         </el-form-item>
         <el-form-item label="描述" prop="description">
-          <el-input v-model="roleForm.description" type="textarea" :rows="3" />
+          <el-input v-model="roleForm.description" type="textarea" :rows="2" />
         </el-form-item>
         <el-form-item label="状态" prop="status">
           <el-radio-group v-model="roleForm.status">
             <el-radio :label="1">启用</el-radio>
             <el-radio :label="0">禁用</el-radio>
           </el-radio-group>
+        </el-form-item>
+        <el-form-item label="分配权限" prop="permissions">
+          <div class="permission-tree-container">
+            <el-tree
+              ref="permissionTreeRef"
+              :data="permissionTreeData"
+              :props="{ label: 'permissionName', children: 'children' }"
+              show-checkbox
+              node-key="id"
+              :check-strictly="false"
+            >
+              <template #default="{ node, data }">
+                <span class="permission-node">
+                  <span>{{ data.permissionName }}</span>
+                  <el-tag v-if="data.type === 'button'" type="warning" size="small" class="permission-type">
+                    {{ data.type === 'button' ? '按钮' : '菜单' }}
+                  </el-tag>
+                </span>
+              </template>
+            </el-tree>
+          </div>
         </el-form-item>
       </el-form>
       
@@ -61,48 +82,20 @@
         <el-button type="primary" @click="handleSave">确定</el-button>
       </template>
     </el-dialog>
-    
-    <!-- 权限分配对话框 -->
-    <el-dialog
-      v-model="permissionDialogVisible"
-      title="分配权限"
-      width="500px"
-      :close-on-click-modal="false"
-      :close-on-press-escape="false"
-      @close="handlePermissionDialogClose"
-    >
-      <el-tree
-        ref="permissionTreeRef"
-        :data="permissionTreeData"
-        :props="{ label: 'permissionName', children: 'children' }"
-        show-checkbox
-        node-key="id"
-        :default-checked-keys="checkedPermissions"
-        :check-strictly="true"
-      />
-      
-      <template #footer>
-        <el-button @click="permissionDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleSavePermissions">确定</el-button>
-      </template>
-    </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, nextTick } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getRoleList, createRole, updateRole, deleteRole, assignPermissions, getRolePermissions } from '@/api/role'
 import { getPermissionList } from '@/api/permission'
 
 const loading = ref(false)
 const dialogVisible = ref(false)
-const permissionDialogVisible = ref(false)
 const dialogType = ref('create')
 const formRef = ref(null)
 const permissionTreeRef = ref(null)
-const currentRoleId = ref(null)
-const checkedPermissions = ref([])
 
 const roleList = ref([])
 const permissionList = ref([])
@@ -137,29 +130,13 @@ const fetchPermissions = async () => {
   try {
     const res = await getPermissionList()
     permissionList.value = res.data || []
-    permissionTreeData.value = buildPermissionTree(permissionList.value)
+    permissionTreeData.value = permissionList.value
   } catch (error) {
     console.error('获取权限列表失败:', error)
   }
 }
 
-const buildPermissionTree = (permissions) => {
-  const map = {}
-  permissions.forEach(p => {
-    map[p.id] = { ...p, children: [] }
-  })
-  const tree = []
-  permissions.forEach(p => {
-    if (p.parentId === 0 || !map[p.parentId]) {
-      tree.push(map[p.id])
-    } else {
-      map[p.parentId].children.push(map[p.id])
-    }
-  })
-  return tree
-}
-
-const handleCreate = () => {
+const handleCreate = async () => {
   dialogType.value = 'create'
   roleForm.id = null
   roleForm.roleName = ''
@@ -167,35 +144,36 @@ const handleCreate = () => {
   roleForm.description = ''
   roleForm.status = 1
   dialogVisible.value = true
-}
-
-const handleEdit = (row) => {
-  dialogType.value = 'edit'
-  Object.assign(roleForm, row)
-  dialogVisible.value = true
-}
-
-const handlePermissions = async (row) => {
-  currentRoleId.value = row.id
-  try {
-    // 先获取所有权限
-    const res = await getPermissionList()
-    permissionList.value = res.data || []
-    permissionTreeData.value = buildPermissionTree(permissionList.value)
-    
-    // 再获取角色已有权限
-    const roleRes = await getRolePermissions(row.id)
-    checkedPermissions.value = roleRes.data || []
-    permissionDialogVisible.value = true
-  } catch (error) {
-    console.error('获取权限列表失败:', error)
+  
+  await nextTick()
+  if (permissionTreeRef.value) {
+    permissionTreeRef.value.setCheckedKeys([])
   }
 }
 
-const handlePermissionDialogClose = () => {
-  permissionTreeData.value = []
-  checkedPermissions.value = []
-  currentRoleId.value = null
+const handleEdit = async (row) => {
+  dialogType.value = 'edit'
+  roleForm.id = row.id
+  roleForm.roleName = row.roleName
+  roleForm.roleCode = row.roleCode
+  roleForm.description = row.description
+  roleForm.status = row.status
+  
+  // 获取角色已有权限
+  let permissionIds = []
+  try {
+    const roleRes = await getRolePermissions(row.id)
+    permissionIds = roleRes.data || []
+  } catch (error) {
+    console.error('获取角色权限失败:', error)
+  }
+  
+  dialogVisible.value = true
+  
+  await nextTick()
+  if (permissionTreeRef.value) {
+    permissionTreeRef.value.setCheckedKeys(permissionIds)
+  }
 }
 
 const handleDelete = (row) => {
@@ -216,36 +194,35 @@ const handleSave = async () => {
   try {
     await formRef.value.validate()
     
+    let savedRoleId
+    
     if (dialogType.value === 'create') {
-      await createRole(roleForm)
+      const res = await createRole(roleForm)
+      savedRoleId = res.data
       ElMessage.success('创建成功')
     } else {
       await updateRole(roleForm.id, roleForm)
+      savedRoleId = roleForm.id
       ElMessage.success('更新成功')
+    }
+    
+    // 保存权限
+    if (permissionTreeRef.value) {
+      const checkedNodes = permissionTreeRef.value.getCheckedNodes()
+      const halfCheckedNodes = permissionTreeRef.value.getHalfCheckedNodes()
+      const allCheckedNodes = [...checkedNodes, ...halfCheckedNodes]
+      const permissionIds = allCheckedNodes.map(n => Number(n.id))
+      
+      if (permissionIds.length > 0) {
+        await assignPermissions(savedRoleId, permissionIds)
+        ElMessage.success('权限分配成功')
+      }
     }
     
     dialogVisible.value = false
     fetchData()
   } catch (error) {
     console.error('保存失败:', error)
-  }
-}
-
-const handleSavePermissions = async () => {
-  if (!permissionTreeRef.value) {
-    ElMessage.error('权限树加载失败，请重试')
-    return
-  }
-  
-  const checkedNodes = permissionTreeRef.value.getCheckedNodes()
-  const permissionIds = checkedNodes.map(n => n.id)
-  
-  try {
-    await assignPermissions(currentRoleId.value, permissionIds)
-    ElMessage.success('权限分配成功')
-    permissionDialogVisible.value = false
-  } catch (error) {
-    console.error('权限分配失败:', error)
   }
 }
 
@@ -261,6 +238,24 @@ onMounted(() => {
     display: flex;
     justify-content: space-between;
     align-items: center;
+  }
+  
+  .permission-tree-container {
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid #dcdfe6;
+    border-radius: 4px;
+    padding: 10px;
+    
+    .permission-node {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      
+      .permission-type {
+        margin-left: 8px;
+      }
+    }
   }
 }
 </style>

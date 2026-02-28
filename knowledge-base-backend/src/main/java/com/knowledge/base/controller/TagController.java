@@ -25,6 +25,7 @@ public class TagController {
     
     @Operation(summary = "查询所有标签")
     @GetMapping
+    @PreAuthorize("hasAnyRole('superadmin', 'admin')")
     public Result<List<Tag>> listTags() {
         List<Tag> tags = tagService.selectAllTags();
         return Result.success(tags);
@@ -39,6 +40,7 @@ public class TagController {
     
     @Operation(summary = "查询标签详情")
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('superadmin', 'admin')")
     public Result<Tag> getTag(@PathVariable Long id) {
         Tag tag = tagService.getById(id);
         return Result.success(tag);
@@ -46,7 +48,7 @@ public class TagController {
     
     @Operation(summary = "创建标签")
     @PostMapping
-    
+    @PreAuthorize("hasAnyRole('superadmin', 'admin')")
     public Result<Long> createTag(@Valid @RequestBody TagDTO tagDTO) {
         Long tagId = tagService.createTag(tagDTO);
         return Result.success(tagId);
@@ -54,7 +56,7 @@ public class TagController {
     
     @Operation(summary = "更新标签")
     @PutMapping("/{id}")
-    
+    @PreAuthorize("hasAnyRole('superadmin', 'admin')")
     public Result<Void> updateTag(@PathVariable Long id, @Valid @RequestBody TagDTO tagDTO) {
         tagDTO.setId(id);
         tagService.updateTag(tagDTO);
@@ -63,7 +65,7 @@ public class TagController {
     
     @Operation(summary = "删除标签")
     @DeleteMapping("/{id}")
-    
+    @PreAuthorize("hasAnyRole('superadmin', 'admin')")
     public Result<Void> deleteTag(@PathVariable Long id) {
         tagService.deleteTag(id);
         return Result.success();
@@ -71,7 +73,7 @@ public class TagController {
     
     @Operation(summary = "批量删除标签")
     @DeleteMapping("/batch")
-    
+    @PreAuthorize("hasAnyRole('superadmin', 'admin')")
     public Result<Void> deleteTags(@RequestBody List<Long> ids) {
         tagService.deleteTags(ids);
         return Result.success();

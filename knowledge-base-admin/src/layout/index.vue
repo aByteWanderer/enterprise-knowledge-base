@@ -106,41 +106,64 @@ const menuRoutes = [
   {
     path: '/users',
     name: 'UserManagement',
-    meta: { title: '用户管理', icon: 'User' }
+    meta: { title: '用户管理', icon: 'User', permission: 'user:list' }
   },
   {
     path: '/roles',
     name: 'RoleManagement',
-    meta: { title: '角色管理', icon: 'UserFilled' }
+    meta: { title: '角色管理', icon: 'UserFilled', permission: 'role:list' }
   },
   {
     path: '/permissions',
     name: 'PermissionManagement',
-    meta: { title: '权限管理', icon: 'Key' }
+    meta: { title: '权限管理', icon: 'Key', permission: 'permission:list' }
   },
   {
     path: '/categories',
     name: 'CategoryManagement',
-    meta: { title: '分类管理', icon: 'Folder' }
+    meta: { title: '分类管理', icon: 'Folder', permission: 'category:list' }
   },
   {
     path: '/articles',
     name: 'ArticleManagement',
-    meta: { title: '文章管理', icon: 'Document' }
+    meta: { title: '文章管理', icon: 'Document', permission: 'article:list' }
   },
   {
     path: '/articles/audit',
     name: 'ArticleAudit',
-    meta: { title: '文章审核', icon: 'Stamp' }
+    meta: { title: '文章审核', icon: 'Stamp', permission: 'article:audit' }
   },
   {
     path: '/tags',
     name: 'TagManagement',
-    meta: { title: '标签管理', icon: 'PriceTag' }
+    meta: { title: '标签管理', icon: 'PriceTag', permission: 'tag:list' }
+  },
+  {
+    path: '/help',
+    name: 'Help',
+    meta: { title: '使用帮助', icon: 'QuestionFilled' }
   }
 ]
 
-const routes = computed(() => menuRoutes)
+const routes = computed(() => {
+  const userRoles = userStore.roles || []
+  const userPermissions = userStore.permissions || []
+  
+  // 超级管理员可以看到所有菜单
+  if (userRoles.includes('superadmin') || userRoles.includes('admin')) {
+    return menuRoutes
+  }
+  
+  // 普通用户根据权限过滤菜单
+  return menuRoutes.filter(route => {
+    // 没有权限要求的菜单（如首页、使用帮助）直接显示
+    if (!route.meta.permission) {
+      return true
+    }
+    // 检查用户是否有该权限
+    return userPermissions.includes(route.meta.permission)
+  })
+})
 
 const activeMenu = computed(() => route.path)
 

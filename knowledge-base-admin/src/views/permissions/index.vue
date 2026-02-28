@@ -10,28 +10,29 @@
         </div>
       </template>
       
-      <el-table :data="permissionList" v-loading="loading" style="width: 100%">
-        <el-table-column prop="permissionName" label="权限名称" width="150" />
-        <el-table-column prop="permissionCode" label="权限编码" width="200" />
+      <el-table :data="permissionList" v-loading="loading" style="width: 100%" row-key="id" default-expand-all>
+        <el-table-column prop="permissionName" label="权限名称" width="200" />
+        <el-table-column prop="permissionCode" label="权限编码" width="180" />
         <el-table-column prop="type" label="类型" width="100">
           <template #default="{ row }">
-            <el-tag :type="row.type === 'menu' ? 'success' : 'warning'">
+            <el-tag :type="row.type === 'menu' ? 'success' : 'warning'" size="small">
               {{ row.type === 'menu' ? '菜单' : '按钮' }}
             </el-tag>
           </template>
         </el-table-column>
         <el-table-column prop="path" label="路由路径" show-overflow-tooltip />
-        <el-table-column prop="status" label="状态" width="100">
+        <el-table-column prop="status" label="状态" width="80">
           <template #default="{ row }">
-            <el-tag :type="row.status === 1 ? 'success' : 'danger'">
+            <el-tag :type="row.status === 1 ? 'success' : 'danger'" size="small">
               {{ row.status === 1 ? '启用' : '禁用' }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="orderNum" label="排序" width="100" align="center" />
-        <el-table-column label="操作" width="200">
+        <el-table-column prop="orderNum" label="排序" width="80" align="center" />
+        <el-table-column label="操作" width="180">
           <template #default="{ row }">
             <el-button type="primary" link @click="handleEdit(row)">编辑</el-button>
+            <el-button type="primary" link @click="handleAddChild(row)" v-if="row.type === 'menu'">新增子权限</el-button>
             <el-button type="danger" link @click="handleDelete(row)">删除</el-button>
           </template>
         </el-table-column>
@@ -124,7 +125,8 @@ const fetchData = async () => {
   try {
     const res = await getPermissionList()
     permissionList.value = res.data || []
-    rootPermissions.value = permissionList.value.filter(p => p.parentId === 0)
+    // 父级权限可以选择所有菜单类型的权限
+    rootPermissions.value = permissionList.value.filter(p => p.type === 'menu')
   } catch (error) {
     console.error('获取权限列表失败:', error)
   } finally {
@@ -139,6 +141,20 @@ const handleCreate = () => {
   permissionForm.permissionCode = ''
   permissionForm.type = 'menu'
   permissionForm.parentId = 0
+  permissionForm.path = ''
+  permissionForm.icon = ''
+  permissionForm.orderNum = 0
+  permissionForm.status = 1
+  dialogVisible.value = true
+}
+
+const handleAddChild = (row) => {
+  dialogType.value = 'create'
+  permissionForm.id = null
+  permissionForm.permissionName = ''
+  permissionForm.permissionCode = ''
+  permissionForm.type = 'button'
+  permissionForm.parentId = row.id
   permissionForm.path = ''
   permissionForm.icon = ''
   permissionForm.orderNum = 0

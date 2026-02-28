@@ -24,7 +24,7 @@ request.interceptors.request.use(
   }
 )
 
-// 响应拦截器
+  // 响应拦截器
 request.interceptors.response.use(
   (response) => {
     const res = response.data
@@ -40,14 +40,19 @@ request.interceptors.response.use(
       const { status, data } = error.response
       switch (status) {
         case 401:
-          ElMessageBox.confirm('登录状态已过期，请重新登录', '提示', {
-            confirmButtonText: '重新登录',
-            cancelButtonText: '取消',
-            type: 'warning'
-          }).then(() => {
-            localStorage.removeItem('token')
-            router.push('/login')
-          })
+          // 如果后端返回了具体错误信息，显示后端信息
+          if (data && data.message) {
+            ElMessage.error(data.message)
+          } else {
+            ElMessageBox.confirm('登录状态已过期，请重新登录', '提示', {
+              confirmButtonText: '重新登录',
+              cancelButtonText: '取消',
+              type: 'warning'
+            }).then(() => {
+              localStorage.removeItem('token')
+              router.push('/login')
+            })
+          }
           break
         case 403:
           ElMessage.error('没有权限访问')
